@@ -83,6 +83,6 @@ def main():
     # check_device()
     # convert(model_path)
     network_infer = next(network(model_path))
-    print(network_infer.from)
+    print(network_infer)
 
 main()
