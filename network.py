@@ -1,24 +1,40 @@
 from openvino.runtime import Core, PartialShape 
 from openvino.offline_transformations import serialize
 from pathlib import Path
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-"""
-这份代码在设置好模型路径之后，运行得到的结果是：
-{<ConstOutput: names[output] shape{1,1} type: f32>: array([[-2.247045]], dtype=float32)}
-这个数据类型我不懂，然后输出的好像是array这一列里面的东西，我不知道怎么弄出来
-然后就是，我输入的是错误的图片，然后得到的是负数，所以，负数代表假脸，对吗？
-"""
-
+# 此处修改文件路径
 model_path="model/deepfake_detection_model.xml"
+extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
+image_path="../../save/44t.png"
 
 test = 1
-reshape_model_batch_size = 0
+reshape_model_batch_size = False
 enable_caching = True
 
+def extract_face(image_path,extract_face_model_path):
+    '''提取图像中的一张人脸，输出的数据可以直接放入神经网络'''
+    image = cv2.imread(filename=image_path)
+    cascade = cv2.CascadeClassifier(extract_face_model_path)
+    rects = cascade.detectMultiScale(image, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),flags=cv2.CASCADE_SCALE_IMAGE)
+    if len(rects) == 0:
+        return []
+    rects[:, 2:] += rects[:, :2]
+    for x1,y1,x2,y2 in rects:
+        # 调整人脸截取的大小。横向为x,纵向为y
+        # TODO 就是可以优化这个矩形，例如，将矩形摆正或者之类的
+        image_roi = image[y1-15 :y2+30, x1-50 :x2]
+    #  展示出人脸
+    if test:
+        plt.imshow(image_roi)
+    input_image = cv2.resize(image_roi, (224, 224))
+    input_image = np.expand_dims(input_image.transpose(2, 0, 1), 0)
+    return input_image 
 
 def check_device():
+    """检查设备可用情况"""
     if test:
         devices = ie.available_devices
         for device in devices:
@@ -26,7 +42,7 @@ def check_device():
             print(f"{device}: {device_name}")
 
 
-def network(model_path="model/deepfake_detection_model.xml"):
+def network(image_path,model_path): 
     # init ie
     ie = Core()
     model = ie.read_model(model=model_path)
@@ -57,19 +73,17 @@ def network(model_path="model/deepfake_detection_model.xml"):
     # inference status
     # process image
     while True:
-        image_filename = "../../save/test.jpg"
-        image = cv2.imread(image_filename)
-        N, C, H, W = input_layer.shape
-        resized_image = cv2.resize(src = image, dsize=(W,H))
-        input_data = np.expand_dims(np.transpose(resized_image, (2, 0, 1)), 0).astype(np.float32)
-        if test: 
-            print("image.shape:",image.shape)
+        input_data = extract_face(image_path,extract_face_model_path)
+        # 检查输入数据的形状
+        if test:
             print("input_data.shape:",input_data.shape)
-
-        compiled_model = ie.compile_model(model=model,device_name="GPU", config=config_dict)
         # inference
-        yield compiled_model([input_data])
-
+        result = list(compiled_model([input_data]).values())[0][0][0]
+        if result >= 0:
+            result = "real"
+        else:
+            result = "fake"
+        yield result
             
     
 
@@ -82,7 +96,7 @@ def main():
     ie = Core()
     # check_device()
     # convert(model_path)
-    network_infer = next(network(model_path))
+    network_infer = next(network(image_path=image_path,model_path=model_path))
     print(network_infer)
 
 main()
