@@ -1,18 +1,24 @@
-import os
-from flask import Flask, flash, request, redirect, url_for
+import os, sys
+import random 
+from pathlib import Path
+from flask import Flask, flash, request, redirect
 from werkzeug.utils import secure_filename
-import random
+from openvino_deploy.network import deepfake_detection_network
 
-UPLOAD_FOLDER = '/home/ab/Project/save' # 图片储存路径
-ALLOWED_EXTENSIONS = {'png','jpg','jpeg'} # 输入格式仅限于这三种
+# 文件说明：
+"""上传文件后用网络处理，然后显示纯文本消息，要再次上传就要重新发送请求（刷新网页）"""
+
+
+# 路径
+
+extract_face_model_path = "openvino_deploy/model/haarcascade_frontalface_alt2.xml"
+model_path="openvino_deploy/model/deepfake_detection_model.xml"
+UPLOAD_FOLDER = '/home/ab/Desktop/uploads' # 路径
+ALLOWED_EXTENSIONS = {'png','jpg','jpeg'}  # 接受的文件后缀名
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
-
-# 假神经网络
-def network_infer():
-    random.randint(0,1)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -30,17 +36,12 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            app.config["path"]=(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        try:
+            app.config["path"]=(os.path.join(app.config['UPLOAD_FOLDER'],filename))
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))  
-        except FileNotFoundError :
-            return redirect(url_for('error'))
-        finally:
-            result = network_infer()
-            if result :
-                return redirect(url_for('real'))
-            else:
-                return redirect(url_for('fake'))
+        return deepfake_detection_network(model_path = model_path,\
+            extract_face_model_path = extract_face_model_path,\
+                image_path=app.config["path"])
+
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -50,15 +51,3 @@ def upload_file():
       <input type=submit value=Upload>
     </form>
     '''
-
-@app.route('/error',methods=['GET','POST'])
-def error():
-    return f'{app.config["path"]}'
-
-@app.route('/real',method=['GET','POST'])
-def real():
-    return f'图片为真'
-
-@app.route('/fake',method=['GET','POST'])
-def fake():
-    return f'图片为假'
