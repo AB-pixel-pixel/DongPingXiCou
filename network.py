@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
+"""可以独立测试"""
+
 # 此处修改文件路径
 model_path="model/deepfake_detection_model.xml"
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
@@ -13,13 +15,15 @@ image_path="../../save/test.jpg" #TODO 和服务器交互的
 test = 0
 show_face = 1
 reshape_model_batch_size = False
-enable_caching = True
+enable_caching = False
 
-def extract_face(image_path,extract_face_model_path):
+def extract_face(image_path="../../save/test.jpg",\
+    extract_face_model_path="model/haarcascade_frontalface_alt2.xml"):
     '''提取图像中的一张人脸，输出的数据可以直接放入神经网络'''
     image = cv2.imread(filename=image_path)
     cascade = cv2.CascadeClassifier(extract_face_model_path)
-    rects = cascade.detectMultiScale(image, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),flags=cv2.CASCADE_SCALE_IMAGE)
+    rects = cascade.detectMultiScale(image, \
+        scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),flags=cv2.CASCADE_SCALE_IMAGE)
     if len(rects) == 0:
         return []
     rects[:, 2:] += rects[:, :2]
@@ -43,14 +47,14 @@ def check_device():
             print(f"{device}: {device_name}")
 
 
-def network(image_path,model_path): 
+def deepfake_detection_network(image_path,model_path,extract_face_model_path): 
     # init ie
     ie = Core()
     model = ie.read_model(model=model_path)
     # cache model
-    cache_path = Path("model/model_cache")
+    """ cache_path = Path("model/model_cache")
     cache_path.mkdir(exist_ok=True)
-    config_dict = {"CACHE_DIR": str(cache_path)}
+    config_dict = {"CACHE_DIR": str(cache_path)}"""
     # compile model
     if enable_caching:
         compiled_model = ie.compile_model(model=model,device_name="GPU", config=config_dict)
@@ -74,7 +78,8 @@ def network(image_path,model_path):
     # inference status
     # process image
     while True:
-        input_data = extract_face(image_path,extract_face_model_path)
+        input_data = extract_face(image_path=image_path,\
+            extract_face_model_path=extract_face_model_path)
         # 检查输入数据的形状
         if test:
             print("input_data.shape:",input_data.shape)
@@ -84,7 +89,7 @@ def network(image_path,model_path):
             result = "real"
         else:
             result = "fake"
-        yield result #TODO 返回给服务器
+        return result #TODO 返回给服务器
             
     
 
@@ -92,12 +97,14 @@ def network(image_path,model_path):
 def convert(model_path):
     ie = Core()
     model = ie.read_model(model=model_path)
-    serialize(model=model, model_path="model/deepfake_detection_model.xml", weights_path="model/deepfake_detection_model.bin")
+    serialize(model=model, model_path="model/deepfake_detection_model.xml",\
+         weights_path="model/deepfake_detection_model.bin")
 
 def main():
     # check_device()
     # convert(model_path)
-    print(next(network(image_path=image_path,model_path=model_path)))
+    print(next(deepfake_detection_network(image_path=image_path,\
+        model_path=model_path,\
+        extract_face_model_path=extract_face_model_path)))
     # next(network(image_path=image_path,model_path=model_path))
 
-main()
