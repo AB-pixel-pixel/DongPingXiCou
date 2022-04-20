@@ -8,9 +8,10 @@ import cv2
 # 此处修改文件路径
 model_path="model/deepfake_detection_model.xml"
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
-image_path="../../save/44t.png"
+image_path="../../save/test.jpg" #TODO 和服务器交互的
 
-test = 1
+test = 0
+show_face = 1
 reshape_model_batch_size = False
 enable_caching = True
 
@@ -27,7 +28,7 @@ def extract_face(image_path,extract_face_model_path):
         # TODO 就是可以优化这个矩形，例如，将矩形摆正或者之类的
         image_roi = image[y1-15 :y2+30, x1-50 :x2]
     #  展示出人脸
-    if test:
+    if show_face:
         plt.imshow(image_roi)
     input_image = cv2.resize(image_roi, (224, 224))
     input_image = np.expand_dims(input_image.transpose(2, 0, 1), 0)
@@ -77,26 +78,26 @@ def network(image_path,model_path):
         # 检查输入数据的形状
         if test:
             print("input_data.shape:",input_data.shape)
-        # inference
+            # inference
         result = list(compiled_model([input_data]).values())[0][0][0]
         if result >= 0:
             result = "real"
         else:
             result = "fake"
-        yield result
+        yield result #TODO 返回给服务器
             
     
 
 """以下代码用于将模型从onnx文件转换为IR文件"""
 def convert(model_path):
+    ie = Core()
     model = ie.read_model(model=model_path)
     serialize(model=model, model_path="model/deepfake_detection_model.xml", weights_path="model/deepfake_detection_model.bin")
 
 def main():
-    ie = Core()
     # check_device()
     # convert(model_path)
-    network_infer = next(network(image_path=image_path,model_path=model_path))
-    print(network_infer)
+    print(next(network(image_path=image_path,model_path=model_path)))
+    # next(network(image_path=image_path,model_path=model_path))
 
 main()
