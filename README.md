@@ -1,24 +1,25 @@
 # -
-东拼西凑组作品
-
-
 ----服务器搭建----
 目前服务器仅供测试
 
-## 主要参考教程：
-
+# 如何让代码运行
+## 环境
 ### 安装flask
-教程
+教程：（其中的虚拟环境可以由anaconda的环境去替代）
 https://flask.net.cn/installation.html
+### 安装openvino 2022.1 （可选）
+### 模型准备 （可选）
+所有模型都放在model文件夹中，
+包括，
+人脸识别的模型（xml文件）
+deepfake detection的模型（IR文件）
 
-## 如何让代码运行
-首先确保终端的环境中有flask，和openvino。如果没有Openvino可以：
-### 没有openvino
+### 如果没有Openvino可以：
 用首页的upload_image.py去替代Dong里的upload_image.py
-
+里面有假模型，可以满足通信测试
 ### 接下来的步骤都一样
 
-进入Flask文件夹,打开终端依次输入
+进入Dong/flask文件夹,在文件夹中打开Linux终端依次输入
 
 export FLASK_APP=upload_image.py
 
