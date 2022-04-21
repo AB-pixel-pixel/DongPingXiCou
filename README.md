@@ -11,7 +11,7 @@
 https://flask.net.cn/installation.html
 
 ### 如何让代码运行
-进入DongPingXiCou文件夹
+进入文件夹
 
 在终端依次输入
 
