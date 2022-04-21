@@ -15,10 +15,13 @@ from openvino_deploy.network import deepfake_detection_network
 人脸识别模型名称必须为:haarcascade_frontalface_alt2.xml
 神经网络模型为IR文件:deepfake_detection_model.xml
 """
+import os
+from pathlib import Path
 current_file_path=Path(os.path.abspath(__file__))
 save_image_path=current_file_path.parent.parent /'save'
 extract_face_model_path = current_file_path.parent \
-    / 'openvino_deploy/model/haarcascade_frontalface_alt2.xml' # 人脸识别模型
+    / 'openvino_deploy/model/haarcascade_frontalface_alt2.xml' # 人脸识别模型路径
+extract_face_model_path=str(extract_face_model_path) # opencv函数要求参数为str类型
 model_path = current_file_path.parent \
     / 'openvino_deploy/model/deepfake_detection_model.xml'
 
@@ -54,11 +57,10 @@ def upload_file():
             work = 0
             if os.path.exists(app.config["image_path"]):
                 os.remove(app.config["image_path"])
-                work = 1
             if result:
-                return f"real_face{work}"
+                return "real_face"
             else:
-                return f"fake_face{work}"
+                return "fake_face"
 
     return '''
     <!doctype html>
