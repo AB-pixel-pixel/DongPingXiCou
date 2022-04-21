@@ -12,6 +12,9 @@
 https://flask.net.cn/installation.html
 
 ### 如何让代码运行
+首先确保终端的环境中有flask，和openvino。如果没有Openvino可以：
+## 没有openvino
+用首页的upload_image.py去替代Dong里的upload_image.py
 
 进入Flask文件夹,打开终端依次输入
 
