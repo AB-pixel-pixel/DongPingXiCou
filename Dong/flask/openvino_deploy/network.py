@@ -5,20 +5,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-"""可以独立测试"""
+"""可以独立测试,使用test()函数,测试后,记得删掉 test() 语句"""
 
 # 此处修改文件路径
 model_path="model/deepfake_detection_model.xml"
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
-image_path="../../save/test.jpg" 
-
+image_path="../../save/true1.jpeg" # 修改此处
 test = 0
-show_face = 1
 reshape_model_batch_size = False
 enable_caching = False
 
-def extract_face(image_path="../../save/test.jpg",\
-    extract_face_model_path="model/haarcascade_frontalface_alt2.xml"):
+def extract_face(image_path,extract_face_model_path,test):
     '''提取图像中的一张人脸，输出的数据可以直接放入神经网络'''
     image = cv2.imread(filename=image_path)
     cascade = cv2.CascadeClassifier(extract_face_model_path)
@@ -32,8 +29,11 @@ def extract_face(image_path="../../save/test.jpg",\
         # TODO 就是可以优化这个矩形，例如，将矩形摆正或者之类的
         image_roi = image[y1-15 :y2+30, x1-50 :x2]
     #  展示出人脸
-    if show_face:
-        plt.imshow(image_roi)
+    if test:
+        try: 
+            plt.imshow(image_roi)
+        except ValueError:
+            return image # 识别不到人脸，返回原图
     input_image = cv2.resize(image_roi, (224, 224))
     input_image = np.expand_dims(input_image.transpose(2, 0, 1), 0)
     return input_image 
@@ -47,7 +47,7 @@ def check_device():
             print(f"{device}: {device_name}")
 
 
-def deepfake_detection_network(image_path,model_path,extract_face_model_path): 
+def deepfake_detection_network(image_path,model_path,extract_face_model_path,test=0): 
     # init ie
     ie = Core()
     model = ie.read_model(model=model_path)
@@ -79,17 +79,20 @@ def deepfake_detection_network(image_path,model_path,extract_face_model_path):
     # process image
     while True:
         input_data = extract_face(image_path=image_path,\
-            extract_face_model_path=extract_face_model_path)
-        # 检查输入数据的形状
-        if test:
-            print("input_data.shape:",input_data.shape)
-            # inference
-        result = list(compiled_model([input_data]).values())[0][0][0]
-        if result >= 0:
+                extract_face_model_path=extract_face_model_path,test=test)
+        # inference
+        try:
+            result = list(compiled_model([input_data]).values())[0][0][0]
+            print(result)
+        except RuntimeError : # 图片为空时，flask会报的错误
+            return -1
+        except AttributeError : # 图片为空时，单独调试时，报的错
+            return "no face"
+        if result > 0 :
             result = 1
         else:
             result = 0
-        return result 
+        return result #TODO 返回给服务器
             
     
 
@@ -100,11 +103,12 @@ def convert(model_path):
     serialize(model=model, model_path="model/deepfake_detection_model.xml",\
          weights_path="model/deepfake_detection_model.bin")
 
-def main():
+def test():
     # check_device()
     # convert(model_path)
-    print(next(deepfake_detection_network(image_path=image_path,\
+    print(deepfake_detection_network(image_path=image_path,\
         model_path=model_path,\
-        extract_face_model_path=extract_face_model_path)))
+        extract_face_model_path=extract_face_model_path,test=test))
     # next(network(image_path=image_path,model_path=model_path))
 
+test()
