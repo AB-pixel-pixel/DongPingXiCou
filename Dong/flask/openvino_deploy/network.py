@@ -8,7 +8,7 @@ import cv2
 """可以独立测试,使用test()函数,测试后,记得删掉 test() 语句"""
 
 # 此处修改文件路径
-model_path="model/deepfake_detection_model.xml"
+model_path="model/xxxx.onnx" # 将onnx文件放到model文件夹下面，然后把文件名改一下就好了
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
 image_path="../../save/true1.jpeg" # 修改此处
 test = 0
