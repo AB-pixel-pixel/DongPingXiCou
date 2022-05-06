@@ -8,7 +8,7 @@ import cv2
 """可以独立测试,使用test()函数"""
 
 # 此处修改文件路径
-model_path="model/xxxx.onnx" # 将onnx文件放到model文件夹下面，然后把文件名改一下就好了
+model_path="model/model_filename" # 将onnx文件或者IR文件放到model文件夹下面，使用时将相应的文件名替换model_filename
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
 image_path="../../save/true1.jpeg" # 测试时修改此处
 test = 0
