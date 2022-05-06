@@ -9,7 +9,7 @@ flask 2.0.2
 ### 关键字：openvino,deepfake dectection
 ### License 
 The source code is released under none license 
-
+### Author:Ling Shaobin,Zhan Jun,Zhou Yueying,Chen Sitao
 
 ## 环境
 ### 安装flask
