@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-"""可以独立测试,使用test()函数,测试后,记得删掉 test() 语句"""
+"""可以独立测试,使用test()函数"""
 
 # 此处修改文件路径
 model_path="model/xxxx.onnx" # 将onnx文件放到model文件夹下面，然后把文件名改一下就好了
 extract_face_model_path="model/haarcascade_frontalface_alt2.xml"
-image_path="../../save/true1.jpeg" # 修改此处
+image_path="../../save/true1.jpeg" # 测试时修改此处
 test = 0
 reshape_model_batch_size = False
 enable_caching = False
@@ -26,7 +26,6 @@ def extract_face(image_path,extract_face_model_path,test):
     rects[:, 2:] += rects[:, :2]
     for x1,y1,x2,y2 in rects:
         # 调整人脸截取的大小。横向为x,纵向为y
-        # TODO 就是可以优化这个矩形，例如，将矩形摆正或者之类的
         image_roi = image[y1-15 :y2+30, x1-50 :x2]
     #  展示出人脸
     if test:
@@ -89,9 +88,9 @@ def deepfake_detection_network(image_path,model_path,extract_face_model_path,tes
         except AttributeError : # 图片为空时，单独调试时，报的错
             return "no face"
         if result > 0 :
-            result = 1
-        else:
             result = 0
+        else:
+            result = 1
         return result #TODO 返回给服务器
             
     
@@ -109,6 +108,7 @@ def test():
     print(deepfake_detection_network(image_path=image_path,\
         model_path=model_path,\
         extract_face_model_path=extract_face_model_path,test=test))
-    # next(network(image_path=image_path,model_path=model_path))
+if __name__ == '__main__':
+    test()
 
-test()
+
