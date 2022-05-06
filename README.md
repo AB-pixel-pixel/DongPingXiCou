@@ -9,6 +9,8 @@ flask 2.0.2
 ### 关键字：openvino,deepfake dectection
 ### License 
 The source code is released under none license 
+
+
 ## 环境
 ### 安装flask
 教程：（其中的虚拟环境可以由anaconda的环境去替代）
