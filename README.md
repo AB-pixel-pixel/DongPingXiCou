@@ -1,11 +1,14 @@
 # 东拼西凑组作品
+## 整体描述
+一个用openvino部署deepfake dectection网络模型到服务器的代码框架
 
 ## 测试环境
 Ubuntu 20.04.3
 openvino 2022.1
-
-
-# 如何让代码运行
+flask 2.0.2
+### 关键字：openvino,deepfake dectection
+### License 
+The source code is released under none license 
 ## 环境
 ### 安装flask
 教程：（其中的虚拟环境可以由anaconda的环境去替代）
